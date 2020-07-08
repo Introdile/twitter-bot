@@ -49,7 +49,7 @@ tweet_time = 1.0
 
 # if the bot can reply or not
 # if you turn this off, you'll have to set up a scheduler on heroku
-can_reply = False
+can_reply = True
 # remember to capitalize True or False when you set this
 
 # END SETTINGS
