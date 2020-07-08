@@ -1,0 +1,3 @@
+this is just to trick git to take this directory lol
+im bad programmer
+this will get deleted when the bot runs tho so hey
