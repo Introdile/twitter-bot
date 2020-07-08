@@ -163,8 +163,8 @@ def build_corpus(sched=True):
         t.start()
 
 def filter_text(text):
-    text = re.sub(r'(\#|@|(http))\S+', '', text) # Removes hashtags, @s, and urls
-    text = re.sub(r'([0-9]+\s|[0-9]+:\s|[0-9]\))','', text) # Removes numbers (such as '1 ','1: ','1) ') from the beginning of text
+    text = re.sub(r'(\#|@|(http))\S+', '', text) # Removes hashtags, @'s, and urls
+    text = re.sub(r'([0-9]+\s|[0-9]+:\s|[0-9]+\))','', text) # Removes numbers (such as '1 ','5: ','42) ') from the beginning of text
     text = re.sub(r'^\s+','',text) # Removes whitespace from the beginning of text
     text = re.sub(exclude_words,replace_word,text) # Replaces excluded words with the replace word
     return text
