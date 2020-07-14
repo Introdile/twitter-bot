@@ -32,14 +32,14 @@ source_accounts = ['your_account_1','your_account_2']
 # This should only find whole words, so putting 'fuck' in wont find 'fucking' or 'fucks'
 exclude_words = r'\b()\b'
 
+# what to replace filtered words with
+# I recommend either leaving this blank or adding a single word
+replace_word = ""
+
 # the chance the bot will reply to a tweet
 # above put 1-10 here, 1 is a 10% chance and 10 is a 100% chance
 reply_chance = 7
 # if you want to set it to 0, you should just set can_reply to False and set up a scheduler
-
-# what to replace filtered words with
-# I recommend either leaving this blank or adding a single word
-replace_word = ""
 
 # how many hours between each corpus rebuild
 corpus_rebuild_time = 8.0
@@ -272,7 +272,5 @@ if __name__ == "__main__":
 
         # Rebuilds the corpus depending on what you set the rebuild time too
         # This will rebuild every 24 hours if the rebuild time is set above 24 (theoretically)
-        if now.hour % corpus_rebuild_time == 0:
-            build_corpus(False)
-        
+        build_corpus(False)
         markov_tweet(False)
