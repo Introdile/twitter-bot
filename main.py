@@ -22,7 +22,8 @@ hour_in_seconds = 60.0*60.0
 # the twitter @ of your bot account. if you dont set this right, it wont reply to replies
 my_handle = 'your_bot_accounts_handle'
 
-# the accounts the bot pulls tweets from
+# the accounts the bot pulls tweets from, must be in quotes and comma seperate
+# only up to 6 accounts by default
 # !! ASK FOR PERMISSION IF YOU WANT TO ADD ACCOUNTS OTHER THAN ONES YOU OWN !!
 source_accounts = ['your_account_1','your_account_2']
 
@@ -81,7 +82,7 @@ def markov_tweet(sched=True):
     newStatus = generate_random_sentence()
     try:
         # Tweets the random sentence!
-        api.update_status(newStatus)
+        #api.update_status(newStatus)
         print('{}: {}'.format(my_handle,newStatus))
     except tweepy.TweepError as e:
         # If there's an error, it'll push it to the log
@@ -94,50 +95,27 @@ def markov_tweet(sched=True):
         t.start()
 
 def build_corpus(sched=True):
-    
-    # Sees if a corpus is still in use
-    for f in glob.glob("corpus/*_tweets.txt"):
-        test_pass = False
-        # Tests against each of the accounts given
-        for a in source_accounts:
-            if re.search(a,f) != None:
-                test_pass = True
-        if test_pass == False:
-            # Deletes any files that's not wanted
-            print("Source account no longer used! Deleting {}!".format(f))
-            os.remove(f)
-    
-    # i dont fucking know how to do this better but this is for deleting unsused lastid
-    for f in glob.glob("corpus/*_lastid.txt"):
-        test_pass = False
-        # Tests against each of the accounts given
-        for a in source_accounts:
-            if re.search(a,f) != None:
-                test_pass = True
-        if test_pass == False:
-            # Deletes any files that's not wanted
-            print("Source account no longer used! Deleting {}!".format(f))
-            os.remove(f)
 
     os.chdir('corpus/')
     for user in source_accounts:
         last_id = -1
         # checks if a lastid file exists and if so, it losts the last tweet id it scanned
-        if os.path.isfile('./{}_lastid.txt'.format(user)):
-            fid = open("./{}_lastid.txt".format(user),"r")
+        if os.path.isfile('./{}_lastid.txt'.format(source_accounts.index(user))):
+            fid = open("./{}_lastid.txt".format(source_accounts.index(user)),"r")
             last_id = fid.readline()
+            print(last_id)
             fid.close()
         
         source_tweets, first_id, was_ended = get_tweets(api,user,int(last_id))
 
         if last_id == -1 or last_id != -1 and was_ended == False:
             # if the file is new or the last tweet it scanned was deleted, it rewrites the whole corpus
-            f = open("{}_tweets.txt".format(user),"w",encoding='utf-8')
+            f = open("{}_tweets.txt".format(source_accounts.index(user)),"w",encoding='utf-8')
 
             for tweets in source_tweets:
                 f.write(tweets + "\n")
             
-            print("{user}\'s tweets written to {user}_tweets.txt".format(user=user))
+            print("{user}\'s tweets written to {num}_tweets.txt".format(user=user,num=source_accounts.index(user)))
             f.close()
         else:
             # if there were new tweets since the last rebuild, it adds those lines to the corpus instead
@@ -146,16 +124,19 @@ def build_corpus(sched=True):
                 for tweets in source_tweets:
                     new_tweets = new_tweets + tweets + "\n"
 
-                print("{user}\'s tweets preappended to {user}_tweets.txt".format(user=user))
-                preappend_file("{}_tweets.txt".format(user),new_tweets)
+                print("{user}\'s tweets preappended to {num}_tweets.txt".format(user=user,num=source_accounts.index(user)))
+                preappend_file("{}_tweets.txt".format(source_accounts.index(user)),new_tweets)
             else: print("No new tweets for {}!".format(user))
             # if there's no new tweets it just doesn't, fuck it
         
         # adds the last tweet id scanned in to the account's lastid file
-        fid = open("{}_lastid.txt".format(user),"w")
+        fid = open("{}_lastid.txt".format(source_accounts.index(user)),"w")
         fid.write(str(first_id))
         fid.close()
-    
+        print("Wrote {} to {}_lastid.txt".format(first_id,source_accounts.index(user)))
+
+    os.chdir('..')
+
     # schedules this function to run again after the given time
     if sched == True:
         t = threading.Timer(hour_in_seconds * corpus_rebuild_time,build_corpus)
@@ -198,7 +179,11 @@ def get_tweets(api,user,end_id = -1):
 
 def choose_random_files():
     # Gets all corpus files from the corpus directory
-    tweet_files = glob.glob("corpus/*_tweets.txt")
+    tweet_files = []
+    ##tweet_files = glob.glob("corpus/*_tweets.txt")
+    for i in range(len(source_accounts)):
+        tweet_files.append("corpus/{}_tweets.txt".format(i))
+    
     rand = random.randint(1,len(tweet_files))
 
     random_files = []
@@ -243,7 +228,7 @@ def preappend_file(original_file,text):
 if __name__ == "__main__":
     if can_reply == True:
         now = datetime.datetime.now()
-        time_till_next_hour = 60.0 - now.minute
+        #time_till_next_hour = 60.0 - now.minute
 
         # Schedules the two main function to run at the turn of the hour
         t = threading.Timer(time_till_next_hour * 60.0,build_corpus)
