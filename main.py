@@ -228,7 +228,7 @@ def preappend_file(original_file,text):
 if __name__ == "__main__":
     if can_reply == True:
         now = datetime.datetime.now()
-        #time_till_next_hour = 60.0 - now.minute
+        time_till_next_hour = 60.0 - now.minute
 
         # Schedules the two main function to run at the turn of the hour
         t = threading.Timer(time_till_next_hour * 60.0,build_corpus)
